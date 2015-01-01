@@ -112,22 +112,26 @@ function BoundVelocity(boid, vmax)
         boid.velocity.normalize(vmax);
 }
 
-function UpdatePositions(boids, dt)
+function UpdatePositions(boids, dt, 
+                         baryCenterFraction,
+                         repulsionFraction,
+                         matchVelocityFraction,
+                         maxVelocity)
 {
     for (b in boids)
     {
         var v = FlockCenterOfMass(boids, b);
         //console.log("v = " + v1.x + ", " + v1.y); 
-        boids[b].velocity.offset(v.x/4000.0, v.y/4000.0);
+        boids[b].velocity.offset(v.x/baryCenterFraction, v.y/baryCenterFraction);
         
         //TODO: Adjust scale factor
         v = FlockRepulsion(boids, b); 
-        boids[b].velocity.offset(v.x/4000.0, v.y/4000.0);
+        boids[b].velocity.offset(v.x/repulsionFraction, v.y/repulsionFraction);
         
         v = MatchVelocity(boids, b);
-        boids[b].velocity.offset(v.x/4000.0, v.y/4000.0);
+        boids[b].velocity.offset(v.x/matchVelocityFraction, v.y/matchVelocityFraction);
         
-        BoundVelocity(boids[b], 0.5);
+        BoundVelocity(boids[b], maxVelocity);
         
         boids[b].update_positions(dt);
     }
