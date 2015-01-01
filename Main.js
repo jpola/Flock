@@ -1,17 +1,24 @@
 var boids = new Array();
 
-for (i = 0; i < 5; i++)
+var numberOfBoids = 2;
+
+for (i = 0; i < numberOfBoids; i++)
     boids.push(new Boid());
 
 console.log("Boids in array: " + boids.length);
 
 var W, H;
-var dt = 12.1;
+var dt = 10.1;
 var pause = 0;
 
 var running = false;
 
 var canvas = document.getElementById("myCanvas");
+
+var baryCenterFraction = 4000;
+var repulsionFraction = 4000;
+var matchVelocityFraction = 4000;
+var maxVelocity = 0.4;
 
 W=640;
 H=480;
@@ -22,11 +29,92 @@ canvas.height = H;
 var ctx = canvas.getContext('2d');
 
 // bind event handler to clear butto
-var runbtn = document.getElementById('btnRun');
- 
-runbtn.onclick = function(event)
+var buttonRun = document.getElementById('btnRun');
+
+var rangeBoids = document.getElementById("rngBoids");
+
+var labelNoBoids = document.getElementById("noBoids");
+
+var rangeDeltaT = document.getElementById("rngDeltaT");
+var labelDeltaT = document.getElementById("rngDeltaTValue");
+
+rangeDeltaT.onchange = function(event)
+{
+    dt = rangeDeltaT.value;
+    labelDeltaT.innerHTML = dt;
+}
+
+var rangeBoidsBaryCenterAttraction = document.getElementById("rngBoidsBaryCenterAttraction");
+var labelBoidsBaryCenter = document.getElementById("rngBaryCenterValue");
+
+rangeBoidsBaryCenterAttraction.onchange = function(event)
+{
+    baryCenterFraction = rangeBoidsBaryCenterAttraction.value;
+    labelBoidsBaryCenter.innerHTML = baryCenterFraction;
+}
+
+var rangeRepulsionForce = document.getElementById("rngRepulsion");
+var labelRepulsionValue = document.getElementById("rngRepulsionValue");
+
+rangeRepulsionForce.onchange = function(event)
+{
+    repulsionFraction = rangeRepulsionForce.value;
+    labelRepulsionValue.innerHTML = repulsionFraction;
+}
+
+var rangeMatchVelocity = document.getElementById("rngMatchVelocity");
+var labelMatchVelocity = document.getElementById("rngMatchVelocityValue");
+
+rangeMatchVelocity.onchange = function(event)
+{
+    matchVelocityFraction = rangeMatchVelocity.value;
+    labelMatchVelocity.innerHTML = matchVelocityFraction;
+}
+    
+var rangeMaxVelocity = document.getElementById("rngMaxVelocity");
+var labelMaxVelocity = document.getElementById("rngMaxVelocityValue");
+
+rangeMaxVelocity.onchange = function(event)
+{
+    maxVelocity = rangeMaxVelocity.value;
+    labelMaxVelocity.innerHTML = maxVelocity;
+}
+    
+
+
+buttonRun.onclick = function(event)
 {
     running = !running;
+}
+
+rangeBoids.onchange = function(event)
+{
+    //reinit boids number;
+    var newRagne = rangeBoids.value;
+    
+    var diff = newRagne - numberOfBoids;
+    if (diff > 0) // add new boids;
+    {
+        for (i = 0; i < diff; i++)
+        {
+            console.log("diff = " + diff + " adding " + i);
+            boids.push(new Boid());
+        }
+    }
+    
+    if (diff < 0)
+    {
+        for (i = 0; i < -diff; i++)
+        {
+            console.log("diff = " + (-diff) + " removing " + i);
+            boids.pop();
+        }
+    }
+    
+    
+    //console.log("value = " + rangeBoids.value);
+    numberOfBoids = boids.length;
+    labelNoBoids.innerHTML = numberOfBoids;
 }
 
 canvas.onmousedown = function(event)
@@ -60,7 +148,11 @@ loop = function()
 
         if (!pause)
         {
-            UpdatePositions(boids, dt);
+            UpdatePositions(boids, dt, 
+                            baryCenterFraction,
+                           repulsionFraction,
+                           matchVelocityFraction,
+                           maxVelocity);
         }
 
         BoundFlock(boids, W, H);
@@ -73,9 +165,9 @@ loop = function()
 
         DrawFlock(ctx, boids);
 
-        //call the redraw
     }
     
+    //call the redraw
     requestAnimationFrame(loop);
 
 }    
